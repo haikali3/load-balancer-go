@@ -50,6 +50,18 @@ func handleErr(err error) {
 	}
 }
 
+func (s *simpleServer) Address() string {
+	return s.addr
+}
+
+func (s *simpleServer) IsAlive() bool {
+	return true
+}
+
+func (s *simpleServer) Serve(rw http.ResponseWriter, req *http.Request) {
+	s.proxy.ServeHTTP(rw, req)
+}
+
 func (lb *LoadBalancer) getNextAvailableServer() Server {}
 
 func (lb *LoadBalancer) serverProxy(rw http.ResponseWriter, req *http.Request) {
@@ -66,4 +78,13 @@ func main() {
 		newSimpleServer("http://localhost:3001"),
 		newSimpleServer("http://localhost:3002"),
 	}
+
+	lb := NewLoadBalancer("8080", servers)
+	handleRedirect := func(rw http.ResponseWriter, req *http.Request) {
+		lb.serverProxy(rw, req)
+	}
+	http.HandleFunc("/", handleRedirect)
+
+	fmt.Printf("Load Balancer listening on :%s\n", lb.port)
+	http.ListenAndServe(":"+lb.port, nil)
 }
