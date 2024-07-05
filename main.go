@@ -62,11 +62,22 @@ func (s *simpleServer) Serve(rw http.ResponseWriter, req *http.Request) {
 	s.proxy.ServeHTTP(rw, req)
 }
 
-func (lb *LoadBalancer) getNextAvailableServer() Server {}
+func (lb *loadBalancer) getNextAvailableServer() Server {
+	for i := 0; i < len(lb.servers); i++ {
+		server := lb.servers[lb.roundRobinCount%len(lb.servers)]
+		lb.roundRobinCount++
+		if server.IsAlive() {
+			return server
+		}
+	}
+	return nil
+}
 
-func (lb *LoadBalancer) serverProxy(rw http.ResponseWriter, req *http.Request) {
-	server := lb.getNextAvailableServer()
-	if server == nil {
+func (lb *loadBalancer) serverProxy(rw http.ResponseWriter, req *http.Request) {
+	targetServer := lb.getNextAvailableServer()
+	if targetServer == nil {
+		fmt.Printf("forwarding request to %s\n", targetServer.Address())
+		targetServer.Serve(rw, req)
 		http.Error(rw, "Service Unavailable", http.StatusServiceUnavailable)
 		return
 	}
