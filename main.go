@@ -39,7 +39,7 @@ func NewLoadBalancer(port string, servers []Server) *loadBalancer {
 	return &loadBalancer{
 		port:            port,
 		roundRobinCount: 0,
-		servers:         []Server{},
+		servers:         servers, // Initialize the servers
 	}
 }
 
@@ -76,11 +76,11 @@ func (lb *loadBalancer) getNextAvailableServer() Server {
 func (lb *loadBalancer) serverProxy(rw http.ResponseWriter, req *http.Request) {
 	targetServer := lb.getNextAvailableServer()
 	if targetServer == nil {
-		fmt.Printf("forwarding request to %s\n", targetServer.Address())
-		targetServer.Serve(rw, req)
 		http.Error(rw, "Service Unavailable", http.StatusServiceUnavailable)
 		return
 	}
+	fmt.Printf("forwarding request to %s\n", targetServer.Address())
+	targetServer.Serve(rw, req)
 }
 
 func main() {
