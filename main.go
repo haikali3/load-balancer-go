@@ -60,9 +60,10 @@ func (lb *LoadBalancer) serverProxy(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func main(){
+func main() {
 	servers := []Server{
 		newSimpleServer("http://localhost:3000"),
 		newSimpleServer("http://localhost:3001"),
 		newSimpleServer("http://localhost:3002"),
+	}
 }
