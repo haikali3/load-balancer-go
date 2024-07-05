@@ -49,3 +49,20 @@ func handleErr(err error) {
 		os.Exit(1)
 	}
 }
+
+func (lb *LoadBalancer) getNextAvailableServer() Server {}
+
+func (lb *LoadBalancer) serverProxy(rw http.ResponseWriter, req *http.Request) {
+	server := lb.getNextAvailableServer()
+	if server == nil {
+		http.Error(rw, "Service Unavailable", http.StatusServiceUnavailable)
+		return
+	}
+}
+
+func main(){
+	servers := []Server{
+		newSimpleServer("http://localhost:3000"),
+		newSimpleServer("http://localhost:3001"),
+		newSimpleServer("http://localhost:3002"),
+}
